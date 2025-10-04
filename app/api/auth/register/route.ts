@@ -1,16 +1,10 @@
+// app/api/auth/register/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { signSession } from "@/lib/jwt";
 import { setSessionCookie } from "@/lib/cookies";
-// Example right after you get user back from API:
-localStorage.setItem(
-  "user",
-  JSON.stringify({ id: user.id, email: user.email, name: user.name })
-);
-// optional: force other tabs/navbars to update
-window.dispatchEvent(new StorageEvent("storage", { key: "user", newValue: localStorage.getItem("user")! }));
 
 const Body = z.object({
   name: z.string().min(1).optional(),
@@ -20,25 +14,31 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { name, email, password } = Body.parse(body);
+    const { name, email, password } = Body.parse(await req.json());
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    // 1) no duplicates
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) {
+      return NextResponse.json({ ok: false, error: "Email already registered" }, { status: 409 });
     }
 
+    // 2) create user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, name: name || null, hashedPassword },
+      data: { email, name: name ?? null, hashedPassword },
       select: { id: true, email: true, name: true },
     });
 
+    // 3) issue session cookie
     const token = await signSession({ uid: user.id, email: user.email });
     setSessionCookie(token);
 
-    return NextResponse.json({ user });
+    // 4) return user (client will store to localStorage if needed)
+    return NextResponse.json({ ok: true, user }, { status: 201 });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Invalid request" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: e?.message ?? "Invalid request" },
+      { status: 400 }
+    );
   }
 }
