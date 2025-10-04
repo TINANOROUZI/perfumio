@@ -41,9 +41,9 @@ export default function StoreClient() {
                 id: p.id,
                 brand: p.brand,
                 name: p.name,
-                price: p.price,
+                price: p.price as number,
                 img: p.img,
-                notes: p.notes,
+                notes: p.notes as string[],
                 category: p.category as Product["category"],
                 tag: p.tag,
               }))
@@ -108,15 +108,15 @@ export default function StoreClient() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const notes = useMemo(
-    () => Array.from(new Set(products.flatMap((p) => p.notes))).sort(),
+    () => Array.from(new Set(products.flatMap((p) => p.notes ?? []))).sort(),
     [products]
   );
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const byCat = cat === "All" ? true : p.category === cat;
-      const byNote = note === "All" ? true : p.notes.includes(note);
-      const byPrice = p.price >= price[0] && p.price <= price[1];
+      const byNote = note === "All" ? true : (p.notes?.includes(note) ?? false);
+      const byPrice = p.price != null && p.price >= price[0] && p.price <= price[1];
       const byQuery = query
         ? (p.name + " " + p.brand).toLowerCase().includes(query.toLowerCase())
         : true;
@@ -189,15 +189,13 @@ export default function StoreClient() {
         </div>
       </section>
 
-     {/* ===== CONTENT (hidden until Shop now) ===== */}
-<section
-  className={[
-    "container-a shop-reveal transition-all duration-700 mt-16 md:mt-24",
-    showShop ? "show" : "",
-  ].join(" ")}
->
-
-
+      {/* ===== CONTENT (hidden until Shop now) ===== */}
+      <section
+        className={[
+          "container-a shop-reveal transition-all duration-700 mt-16 md:mt-24",
+          showShop ? "show" : "",
+        ].join(" ")}
+      >
         {/* Mobile gold filter toggle */}
         <div className="lg:hidden mb-4">
           <button
