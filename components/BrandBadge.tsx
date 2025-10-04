@@ -1,12 +1,12 @@
 "use client";
-import { ProductCard } from "@/components/ProductCard";
-import { CartDrawer } from "@/components/CartDrawer";
 
-import React from "react";
+type Props = {
+  name: string;
+  active: boolean;
+  onClick: () => void;
+};
 
-export function BrandBadge({
-  name, active, onClick,
-}: { name: string; active: boolean; onClick: () => void }) {
+export function BrandBadge({ name, active, onClick }: Props) {
   return (
     <button
       onClick={onClick}
