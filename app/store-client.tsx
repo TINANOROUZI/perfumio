@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
-import Image from "next/image";
 import type { Product } from "@/types";
 
 type CartItem = Product & { qty: number };
@@ -176,15 +175,14 @@ export default function StoreClient() {
           </div>
         </div>
 
-        {/* Right: small circular logo with glow */}
+        {/* Right: logo from /public (no optimizer) */}
         <div className="md:col-span-5 flex items-center justify-center">
-          <Image
-            src="/vela-circle.png"
+          <img
+            src="/vela-logo.png"
             alt="Véla Parfums de Luxe"
             width={220}
             height={220}
             className="rounded-full object-contain drop-shadow-[0_0_18px_rgba(230,201,129,0.75)]"
-            priority
           />
         </div>
       </section>
